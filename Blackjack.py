@@ -183,40 +183,48 @@ class CDealer:
 
 class Game:
     def __init__(self, player, dealer):
-        self.player = player
-        self.dealer = dealer
-        player_choice = input(f"{self.player.name}, How much do you want to bet ?")
-        if player.enoughCoins(int(player_choice)): # Make sure player has enough coins
-            player.play()
-            print(len(deck.all_cards))
-            if winner == "" : # winner still unknown
-                dealer.play()
-                print(len(deck.all_cards))
-                if winner == "": # Player and dealer didn't busted
-                    if 21 - player.getSum() < 21 - dealer.getSum():
-                        print(Fore.GREEN + "You are closer to 21. You Won the game.")
+        retry = True
+        while retry :
+            self.player = player
+            self.dealer = dealer
+            player_choice = input(f"{self.player.name}, How much do you want to bet ?")
+            if player.enoughCoins(int(player_choice)): # Make sure player has enough coins
+                player.play()
+                if winner == "" : # winner still unknown
+                    dealer.play()
+                    if winner == "": # Player and dealer didn't busted
+                        if 21 - player.getSum() < 21 - dealer.getSum():
+                            print(Fore.GREEN + "You are closer to 21. You Won the game.")
+                            player.bankroll += 2 * player.bet
+                            print(f"Your Bankroll : {player.bankroll}")
+                        elif 21 - player.getSum() > 21 - dealer.getSum():
+                            print(Fore.RED + "Dealer is closer to 21. You lost !")
+                            player.bankroll -= player.bet
+                            print(f"Your Bankroll : {player.bankroll}")
+                        else:
+                            print(Fore.MAGENTA + "Tide")
+                else :
+                    if winner == "Player":
+                        print(Fore.GREEN + "Dealer busted. You Won !")
                         player.bankroll += 2 * player.bet
-                        print(f"Your Bankroll : {player.bankroll}")
-                    elif 21 - player.getSum() > 21 - dealer.getSum():
-                        print(Fore.RED + "You lost !")
+                    elif winner == "Dealer":
+                        print(Fore.RED + "You busted.You lost !")
                         player.bankroll -= player.bet
-                        print(f"Your Bankroll : {player.bankroll}")
-                    else:
-                        print(Fore.MAGENTA + "Tide")
             else :
-                if winner == "Player":
-                    print(Fore.GREEN + "Dealer busted. You Won !")
-                    player.bankroll += 2 * player.bet
-                elif winner == "Dealer":
-                    print(Fore.RED + "You busted.You lost !")
-                    player.bankroll -= player.bet
-        else :
-            print(f"Not enough money to bet. Current Bankroll : {player.bankroll}")
+                print(f"Not enough money to bet. Current Bankroll : {player.bankroll}")
+
+            retry_choice = input(Fore.WHITE + "Play again ? y or n : ")
+            if retry_choice == "n":
+                retry = False
+            else :
+                new_deck = Deck()
+                new_p = HPlayer(player.name, player.bankroll, new_deck)
+                new_d = CDealer(new_deck)
+                Game(new_p, new_d)
 
 
 
 deck = Deck()
-print(len(deck.all_cards))
 p = HPlayer("Mohamad", 150, deck)
 
 d = CDealer(deck)
