@@ -1,0 +1,11 @@
+This is a console-based version of the Blackjack card game.
+
+Simple Idea :
+    Player(P) plays against a Dealer controlled by PC
+    Features :
+        - Simple text-based BlackJack game
+        - One player versus an automated dealer.
+        - The player can stand or hit.
+        - Player will be able to pick their betting amount.
+        - Player is able to keep track of his\her total Coins.
+        - Alert the player of wins, losses, or busts, etc...
