@@ -55,12 +55,22 @@ class HPlayer:
         self.initialize()
         print(Fore.YELLOW + f"Bankroll : {self.bankroll}" + Style.RESET_ALL)
 
+
+    '''
+        Gives the Dealer the start-cards
+    '''
+
     def initialize(self):
         print("Initializing Player Cards..")
         f_card = self.deck.all_cards.pop()
         s_card = self.deck.all_cards.pop()
         self.open_cards.append(f_card)
         self.open_cards.append(s_card)
+
+
+    '''
+        checks if Player has enough Coins to bet
+    '''
 
     def enoughCoins(self, amt):
         if self.bankroll >= amt:
@@ -85,6 +95,7 @@ class HPlayer:
                 values["Ace"] = 1
 
     '''
+        Takes a card from the Deck and give it to the Player(in case the Deck is not empty)
     '''
     def hit(self):
         if len(self.deck) > 0:
@@ -95,6 +106,11 @@ class HPlayer:
         else:
             print("Deck is Empty")
 
+    '''
+        returns the sum of the values of all cards in Player hand
+        
+    '''
+
     def getSum(self):
         result = 0
         for card in self.open_cards:
@@ -104,13 +120,20 @@ class HPlayer:
     def checkBust(self):
         return self.getSum() > 21
 
+    '''
+        Controls the play of the Player.
+        The Player get to choose between hitting(take new Card) and staying(stop taking cards)
+        
+        IF the player entered another a non valid Option he/she will be asked again to provide a new one.
+    '''
+
     def play(self):
         print("Your Turn ")
         print("Your Table :")
         for card in self.open_cards:
             print(card)
         print(Fore.BLUE + Style.BRIGHT + f"Your Sum : {self.getSum()}" + Style.RESET_ALL)
-        not_valid_opt = True  # Neither hit nor stand were given
+        not_valid_opt = True
         while not_valid_opt or not self.checkBust():
             player_choice = input("Do you want to hit or stand ? h or s : ")
             if player_choice == "hit" or player_choice == "h":
@@ -138,6 +161,10 @@ class CDealer:
         self.open_cards = []
         self.initialize()
 
+    '''
+        Gives the Dealer the start-cards
+    '''
+
     def initialize(self):
         f_card = self.deck.all_cards.pop()
         s_card = self.deck.all_cards.pop()
@@ -145,6 +172,10 @@ class CDealer:
         self.cards.append(f_card)
         self.cards.append(s_card)
 
+
+    '''
+        Takes a new Card from the Deck and give it to the Dealer's .
+    '''
     def hit(self):
         if len(self.deck.all_cards) > 0:
             new_card = self.deck.all_cards.pop()
@@ -153,6 +184,9 @@ class CDealer:
         else:
             print("Deck is Empty")
 
+    '''
+    Returns the sum of the Values of all cards
+    '''
     def getSum(self):
         result = 0
         for card in self.cards:
@@ -163,7 +197,22 @@ class CDealer:
         return self.getSum() > 21  # Player wins twice his bet
 
     def check17(self):
-        return self.getSum() >= 17  # Player have to stay with his hands
+        return self.getSum() >= 17
+
+    '''
+    Shows one of the two start-cards of the Dealer and hide the second one
+    '''
+    def showCards(self):
+        print("Dealer's Table : ")
+        print(self.cards[0])
+        print("Card : Hidden")
+
+
+
+    '''
+    Controls the play of the Dealer
+    Note : As long as the sum of Dealer's hand is smaller than 17, Dealer hits
+    '''
 
     def play(self):
         print("Dealer's Turn ")
@@ -185,37 +234,41 @@ class CDealer:
 
 class Game:
     def __init__(self, player, dealer):
-        retry = True
-        while retry:
+        want_retry = True
+        while want_retry:
             self.player = player
             self.dealer = dealer
-            player_choice = input(f"{self.player.name}, How much do you want to bet ?")
-            if player.enoughCoins(int(player_choice)):  # Make sure player has enough coins
-                player.play()
-                if winner == "":  # winner still unknown
-                    dealer.play()
-                    if winner == "":  # Player and dealer didn't busted
-                        if 21 - player.getSum() < 21 - dealer.getSum():
-                            print(Fore.GREEN + "You are closer to 21. You Won the game." + Style.RESET_ALL)
+            player_choice = input(f"{self.player.name}, How many coins do you want to bet ? ")
+            not_enough_coins = True
+            while not_enough_coins:
+                if player.enoughCoins(int(player_choice)):  # Make sure player has enough coins
+                    not_enough_coins = False
+                    dealer.showCards()
+                    player.play()
+                    if winner == "":  # winner still unknown
+                        dealer.play()
+                        if winner == "":  # Player and dealer didn't busted
+                            if 21 - player.getSum() < 21 - dealer.getSum():
+                                print(Fore.GREEN + "You are closer to 21. You Won the game." + Style.RESET_ALL)
+                                player.bankroll += 2 * player.bet
+                                print(f"Your Bankroll : {player.bankroll}")
+                            elif 21 - player.getSum() > 21 - dealer.getSum():
+                                print(Fore.RED + "Dealer is closer to 21. You lost !" + Style.RESET_ALL)
+                                player.bankroll -= player.bet
+                                print(f"Your Bankroll : {player.bankroll}")
+                            else:
+                                print(Fore.MAGENTA + "Tide" + Style.RESET_ALL)
+                    else:
+                        if winner == "Player":
+                            print(Fore.GREEN + "Dealer busted. You Won !" + Style.RESET_ALL)
                             player.bankroll += 2 * player.bet
                             print(f"Your Bankroll : {player.bankroll}")
-                        elif 21 - player.getSum() > 21 - dealer.getSum():
-                            print(Fore.RED + "Dealer is closer to 21. You lost !" + Style.RESET_ALL)
+                        elif winner == "Dealer":
+                            print(Fore.RED + "You busted.You lost !" + Style.RESET_ALL)
                             player.bankroll -= player.bet
                             print(f"Your Bankroll : {player.bankroll}")
-                        else:
-                            print(Fore.MAGENTA + "Tide" + Style.RESET_ALL)
                 else:
-                    if winner == "Player":
-                        print(Fore.GREEN + "Dealer busted. You Won !" + Style.RESET_ALL)
-                        player.bankroll += 2 * player.bet
-                        print(f"Your Bankroll : {player.bankroll}")
-                    elif winner == "Dealer":
-                        print(Fore.RED + "You busted.You lost !" + Style.RESET_ALL)
-                        player.bankroll -= player.bet
-                        print(f"Your Bankroll : {player.bankroll}")
-            else:
-                print(f"Not enough money to bet. Current Bankroll : {player.bankroll}")
+                    print(f"Not enough money to bet. Current Bankroll : {player.bankroll}")
 
             retry_choice = input(Fore.WHITE + "Play again ? y or n : " + Style.RESET_ALL)
             if retry_choice == "n":
